@@ -50,7 +50,7 @@ def create_app(test_config=None):
     @app.route("/categories", methods=['GET'])
     def get_all_categories():
         categories = Category.query.order_by('type').all()
-        formatted_categories = [category.format() for category in categories]
+        formatted_categories = {category.id: category.type for category in categories}
         if (len(categories) == 0):
             abort(404)
         db.session.close()
@@ -74,6 +74,8 @@ def create_app(test_config=None):
     @app.route("/questions", methods=['GET'])
     def get_all_questions():
         questions = Question.query.order_by('id').all()
+        categories = Category.query.order_by('id').all()
+        formatted_categories = {category.id: category.type for category in categories}
         current_questions = paginate_questions(request, questions)
 
         if len(current_questions) == 0:
@@ -82,7 +84,9 @@ def create_app(test_config=None):
         return jsonify({
             "success": True,
             "questions": current_questions,
-            "total_questions": len(questions)
+            "total_questions": len(questions),
+            "categories": formatted_categories,
+            "current_category": None,
         }), 200
 
     """
@@ -111,9 +115,7 @@ def create_app(test_config=None):
                 return jsonify({
                     "success": True,
                     "deleted": question_id,
-                    "questions": current_questions,
-                    "total_questions": len(updated_questions)
-                })
+                }), 200
 
     """
     @TODO:
@@ -173,7 +175,7 @@ def create_app(test_config=None):
                 "success": True,
                 "questions": current_questions,
                 "total_questions": len(questions),
-            })
+            }), 200
         except:
             abort(422)
 
@@ -198,7 +200,7 @@ def create_app(test_config=None):
                 "questions": current_questions,
                 "total_questions": len(category_questions),
                 "current_category": category_id,
-            })
+            }), 200
         except:
             abort(422)
 
@@ -221,13 +223,20 @@ def create_app(test_config=None):
         try:
             previous_questions = body["previous_questions"]
             category = body["quiz_category"]
-            remaining_questions = Question.query.filter_by(category=category["id"]).filter(Question.id.notin_((previous_questions))).all()
+            remaining_questions = []
+            #all categories
+            if (category["id"] == 0):
+                remaining_questions = Question.query.filter(Question.id.notin_((previous_questions))).all()
+            #specific category
+            else:
+                remaining_questions = Question.query.filter_by(category=category["id"]).filter(Question.id.notin_((previous_questions))).all()
+            
             if len(remaining_questions) >= 1:
                 question = remaining_questions[random.randrange(0, len(remaining_questions))].format()
                 return jsonify({
                     "success": True,
                     "question": question,
-                })
+                }), 200
             else:
                 return None
         except:
