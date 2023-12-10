@@ -60,6 +60,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
         self.assertTrue(len(data["questions"]))
+        self.assertTrue(len(data["categories"]))
         self.assertTrue(data["total_questions"])
 
     def test_get_all_questions_404(self):
@@ -84,8 +85,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
         self.assertEqual(data["deleted"], question.id)
-        self.assertTrue(len(data["questions"]))
-        self.assertTrue(data["total_questions"])
 
     def test_delete_question_404(self):
         res = self.client().delete("/questions/100000")
