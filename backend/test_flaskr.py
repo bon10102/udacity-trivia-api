@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from flaskr import create_app
 from models import setup_db, db, Question, Category
+from settings import TEST_DB_NAME, DB_USER, DB_PASSWORD
 
 
 class TriviaTestCase(unittest.TestCase):
@@ -14,9 +15,9 @@ class TriviaTestCase(unittest.TestCase):
         """Define test variables and initialize app."""
         self.app = create_app('test')
         self.client = self.app.test_client
-        self.database_name = "trivia_test"
+        self.database_name = TEST_DB_NAME
         self.database_path = "postgresql://{}:{}@{}/{}".format(
-            "student", "student", "localhost:5432", self.database_name
+            DB_USER, DB_PASSWORD, "localhost:5432", self.database_name
         )
         setup_db(self.app, self.database_path)
         self.db = db
@@ -32,7 +33,7 @@ class TriviaTestCase(unittest.TestCase):
         pass
 
     """
-    TODO
+    DONE
     Write at least one test for each test for successful operation and for expected errors.
     """
     def test_get_all_categories(self):
